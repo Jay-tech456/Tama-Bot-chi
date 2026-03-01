@@ -1,0 +1,62 @@
+/* ============================================
+   NotificationBadge.css - Notification count badge
+   ============================================ */
+
+/* -- Badge Container -------------------------- */
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 20;
+    animation: badge-bounce 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) both;
+}
+
+/* -- Count Label ------------------------------ */
+.notification-badge__count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    background: linear-gradient(135deg, #ff6b81, #ff4757);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 11px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
+    animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Keyframe Animations
+   ============================================ */
+
+/* -- Badge bounce in -------------------------- */
+@keyframes badge-bounce {
+    0% {
+        transform: scale(0);
+    }
+
+    60% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* -- Gentle pulse to grab attention ----------- */
+@keyframes badge-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 2px 12px rgba(255, 71, 87, 0.7);
+    }
+}

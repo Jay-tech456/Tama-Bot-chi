@@ -1,0 +1,6 @@
+# Credentials and tokens
+credentials.json
+token.json
+*.key
+*.pem
+*.env

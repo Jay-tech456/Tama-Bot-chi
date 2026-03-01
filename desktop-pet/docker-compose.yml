@@ -1,0 +1,19 @@
+# ============================================
+# TamaBotchi Desktop Pet - docker-compose.yml
+# ============================================
+# Runs the React dev preview (not the Electron shell).
+# For full desktop pet experience, use: npm run electron:dev
+# ============================================
+
+version: "3.8"
+
+services:
+  desktop-pet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python and UV
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        version: "0.6.10"  # Pin to a specific uv version
+        enable-cache: true  # Enable built-in caching
+        cache-dependency-glob: "pyproject.toml"  # Invalidate cache when requirements change
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Lint with ruff
+      run: uv run ruff check .
+
+    - name: Format check with ruff
+      run: uv run ruff format --check .
+
+    - name: Test with pytest
+      run: uv run pytest tests/

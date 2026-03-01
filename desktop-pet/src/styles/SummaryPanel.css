@@ -1,0 +1,994 @@
+/* ============================================
+   SummaryPanel.css - Conversation summary panel
+   ============================================ */
+
+/* -- Panel Container -------------------------- */
+.summary-panel {
+    width: 420px;
+    height: 560px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(232, 221, 212, 0.6);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: panel-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* -- Header ----------------------------------- */
+.summary-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(250, 247, 244, 1) 100%);
+}
+
+.summary-panel__title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-panel__icon {
+    font-size: 22px;
+}
+
+.summary-panel__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d2d2d;
+    letter-spacing: -0.3px;
+}
+
+.summary-panel__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: linear-gradient(135deg, #ff6b81, #ff4757);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+.summary-panel__close {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    font-size: 14px;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.summary-panel__close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #444;
+}
+
+/* -- Action Buttons Row ----------------------- */
+.summary-panel__actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.summary-panel__btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.summary-panel__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.summary-panel__btn--primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.summary-panel__btn--primary:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    transform: translateY(-1px);
+}
+
+.summary-panel__btn--secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: #666;
+}
+
+.summary-panel__btn--secondary:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* -- Conversation List ------------------------ */
+.summary-panel__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+}
+
+.summary-panel__list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.summary-panel__list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+}
+
+/* -- Empty State ------------------------------ */
+.summary-panel__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #aaa;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.summary-panel__empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.summary-panel__empty p {
+    font-size: 15px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.summary-panel__empty span {
+    font-size: 12px;
+    color: #bbb;
+    line-height: 1.5;
+}
+
+/* -- Loading Spinner -------------------------- */
+.summary-panel__loader {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(0, 0, 0, 0.08);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+
+/* -- Footer ----------------------------------- */
+.summary-panel__footer {
+    padding: 10px 20px;
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.summary-panel__footer span {
+    font-size: 10px;
+    color: #ccc;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   Conversation Card Styles
+   ============================================ */
+
+/* -- Card Container --------------------------- */
+.conversation-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conversation-card:hover {
+    border-color: rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+}
+
+.conversation-card--unread {
+    border-left: 3px solid #ff6b81;
+    background: rgba(255, 107, 129, 0.02);
+}
+
+/* -- Card Header ------------------------------ */
+.conversation-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.conversation-card__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.conversation-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-card__sender {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d2d2d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-card__time {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.conversation-card__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff6b81;
+    flex-shrink: 0;
+}
+
+/* -- Card Preview ----------------------------- */
+.conversation-card__preview {
+    padding-left: 46px;
+}
+
+.conversation-card__last-msg {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.conversation-card__msg-count {
+    font-size: 10px;
+    color: #bbb;
+}
+
+/* -- Card Loading ----------------------------- */
+.conversation-card__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 0 46px;
+    color: #888;
+    font-size: 12px;
+}
+
+.conversation-card__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* -- Card Summary ----------------------------- */
+.conversation-card__summary {
+    padding: 8px 0 0 46px;
+}
+
+.conversation-card__one-liner {
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    line-height: 1.4;
+}
+
+.conversation-card__summary--expanded {
+    padding-bottom: 4px;
+}
+
+.conversation-card__detail {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #666;
+}
+
+.conversation-card__label {
+    font-weight: 600;
+    color: #888;
+    flex-shrink: 0;
+}
+
+.conversation-card__urgency {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+}
+
+/* -- Requirements & Actions Lists ------------- */
+.conversation-card__section {
+    margin-top: 8px;
+}
+
+.conversation-card__list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+}
+
+.conversation-card__list li {
+    font-size: 11px;
+    color: #555;
+    padding: 2px 0 2px 14px;
+    position: relative;
+    line-height: 1.4;
+}
+
+.conversation-card__list li::before {
+    content: '•';
+    position: absolute;
+    left: 2px;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.conversation-card__list--actions li::before {
+    content: '→';
+    color: #2ed573;
+}
+
+/* -- Expand Hint ------------------------------ */
+.conversation-card__expand-hint {
+    font-size: 10px;
+    color: #ccc;
+    margin-top: 6px;
+    text-align: center;
+}
+
+/* ============================================
+   Keyframe Animations
+   ============================================ */
+
+/* -- Panel slide in --------------------------- */
+@keyframes panel-slide-in {
+    0% {
+        opacity: 0;
+        transform: translateX(20px) scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* -- Spinner rotation ------------------------- */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   Tab Navigation
+   ============================================ */
+
+.summary-panel__tabs {
+    display: flex;
+    padding: 0 16px;
+    gap: 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(250, 247, 244, 0.8);
+}
+
+.summary-panel__tab {
+    flex: 1;
+    padding: 9px 6px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: #aaa;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    letter-spacing: 0.1px;
+}
+
+.summary-panel__tab:hover {
+    color: #667eea;
+}
+
+.summary-panel__tab--active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.summary-panel__tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #ff4757;
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 8px;
+}
+
+/* -- Tab content wrapper ---------------------- */
+.summary-panel__tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.summary-panel__tab-content--chat {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.summary-panel__tab-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.summary-panel__tab-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+}
+
+/* ============================================
+   Calendar View
+   ============================================ */
+
+.calendar-view {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.calendar-view--loading,
+.calendar-view--error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    gap: 10px;
+    text-align: center;
+}
+
+.calendar-view__spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(0, 0, 0, 0.08);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.calendar-view--loading p {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.calendar-view__error-icon {
+    font-size: 36px;
+}
+
+.calendar-view__error-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #444;
+}
+
+.calendar-view__error-msg {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.5;
+    max-width: 300px;
+}
+
+.calendar-view__retry-btn {
+    padding: 7px 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+/* -- Toast notification ----------------------- */
+.calendar-view__toast {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #2ed573, #1e9b55);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 10px;
+    text-align: center;
+    animation: bubble-pop 0.3s ease both;
+    margin-bottom: 6px;
+}
+
+/* -- Section headers -------------------------- */
+.calendar-view__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    margin-top: 4px;
+}
+
+.calendar-view__section-header--reminders {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.calendar-view__section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.calendar-view__reminder-count {
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(102, 126, 234, 0.12);
+    color: #667eea;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.calendar-view__add-btn {
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.calendar-view__add-btn:hover {
+    opacity: 0.88;
+}
+
+/* -- Schedule form ---------------------------- */
+.calendar-view__form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(102, 126, 234, 0.04);
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.calendar-view__input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #333;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+}
+
+.calendar-view__input:focus {
+    border-color: #667eea;
+}
+
+.calendar-view__input--half {
+    flex: 1;
+}
+
+.calendar-view__textarea {
+    resize: none;
+}
+
+.calendar-view__time-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.calendar-view__time-sep {
+    font-size: 11px;
+    color: #aaa;
+    flex-shrink: 0;
+}
+
+.calendar-view__submit-btn {
+    padding: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.calendar-view__submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* -- Empty state ------------------------------ */
+.calendar-view__empty {
+    text-align: center;
+    padding: 20px 0;
+    color: #bbb;
+    font-size: 12px;
+}
+
+/* -- Day groups ------------------------------- */
+.calendar-view__day-group {
+    margin-bottom: 8px;
+}
+
+.calendar-view__day-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    margin-left: 2px;
+}
+
+/* -- Event cards ------------------------------ */
+.calendar-view__event-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    padding: 9px 11px;
+    margin-bottom: 4px;
+}
+
+.calendar-view__event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.calendar-view__event-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.calendar-view__event-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2d2d2d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-view__event-time {
+    font-size: 10px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.calendar-view__event-cal {
+    color: #bbb;
+}
+
+.calendar-view__event-notes {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* -- Reminder cards --------------------------- */
+.calendar-view__reminder-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    padding: 8px 11px;
+    margin-bottom: 4px;
+}
+
+.calendar-view__reminder-due {
+    font-size: 9px;
+    font-weight: 700;
+    color: #2ed573;
+    background: rgba(46, 213, 115, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.calendar-view__reminder-due--overdue {
+    color: #ff4757;
+    background: rgba(255, 71, 87, 0.1);
+}
+
+.calendar-view__reminder-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-view__reminder-list {
+    font-size: 10px;
+    color: #bbb;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   Chat View
+   ============================================ */
+
+.chat-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.chat-view__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-view__messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-view__messages::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+/* -- Message bubbles -------------------------- */
+.chat-view__bubble {
+    display: flex;
+    align-items: flex-end;
+    gap: 7px;
+    max-width: 88%;
+}
+
+.chat-view__bubble--user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-view__bubble--assistant {
+    align-self: flex-start;
+}
+
+.chat-view__avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-view__text {
+    padding: 9px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.chat-view__bubble--user .chat-view__text {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-view__bubble--assistant .chat-view__text {
+    background: #f0f0f5;
+    color: #333;
+    border-bottom-left-radius: 4px;
+}
+
+/* -- Typing indicator ------------------------- */
+.chat-view__typing {
+    display: flex;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #f0f0f5;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-view__typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #aaa;
+    animation: typing-dot 1.2s ease-in-out infinite;
+}
+
+.chat-view__typing span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chat-view__typing span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
+}
+
+/* -- Chat footer ------------------------------ */
+.chat-view__footer {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(250, 247, 244, 0.9);
+}
+
+.chat-view__input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    font-size: 12px;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    outline: none;
+    resize: none;
+    transition: border-color 0.2s ease;
+    line-height: 1.4;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.chat-view__input:focus {
+    border-color: #667eea;
+}
+
+.chat-view__input:disabled {
+    opacity: 0.6;
+}
+
+.chat-view__send-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease;
+}
+
+.chat-view__send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.chat-view__clear-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: transparent;
+    color: #aaa;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.chat-view__clear-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #666;
+}
