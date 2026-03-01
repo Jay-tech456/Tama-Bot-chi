@@ -1,6 +1,20 @@
 # TamaBotchi
 
-An AI-powered iMessage auto-reply agent. TamaBotchi watches your Mac's Messages app, reads incoming iMessages, generates replies using Claude, and sends them back — automatically.
+TamaBotchi is a desktop pet that lives on your Mac and handles your iMessages.
+
+Inspired by the Tamagotchi, it is a little companion that sits on your screen — idle when things are quiet, excited when messages come in, and always working behind the scenes to keep your conversations going. When someone texts you, TamaBotchi reads the message, thinks about it using Claude AI, and sends a reply that sounds like you.
+
+It is not just an auto-responder. It is a trusted companion that knows your voice, respects your relationships, and acts on your behalf only when you want it to.
+
+---
+
+## What It Does
+
+- Watches your Mac's iMessage inbox in real time via `chat.db`
+- Reads incoming messages and generates context-aware replies using Claude
+- Sends replies automatically through the Messages app via AppleScript
+- Shows up on your desktop as an animated bunny that reacts to your message activity — bouncing when new messages arrive, sleeping when things are quiet
+- Remembers your preferences: tone, formality, which contacts to auto-reply to, and which ones to always ask you about first
 
 ---
 
@@ -17,7 +31,7 @@ Incoming iMessage
   polls every 3s                                    │
                                                     │  calls Claude
                                                     ▼
-                                               Claude AI generates reply
+                                               Claude generates reply
                                                     │
                                                     ▼
   watcher.py  ◄──────────────────────────────  returns reply text
@@ -29,14 +43,16 @@ iMessage Bridge (port 5001)
 AppleScript → Messages.app → sends reply
 ```
 
-**Four services run in parallel:**
+**Four services run together:**
 
-| Service | Port | What it does |
-|---------|------|-------------|
-| Agent API | 5000 | Receives messages, calls Claude, returns reply |
-| iMessage Bridge | 5001 | Sends iMessages via AppleScript |
-| MCP Server | 5002 | Stores user preferences in SQLite |
-| Watcher | — | Polls chat.db, orchestrates the full flow |
+| Service | Port | Role |
+|---------|------|------|
+| Agent API | 5000 | Receives messages, calls Claude, returns the reply |
+| iMessage Bridge | 5001 | Sends iMessages back via AppleScript |
+| MCP Server | 5002 | Stores your preferences and conversation history |
+| Watcher | — | Polls `chat.db`, orchestrates the full loop |
+
+The desktop pet (`desktop-pet/`) runs as an Electron app sitting above your other windows. It polls for unread message counts and changes mood states accordingly — a visual pulse for your inbox.
 
 ---
 
@@ -44,6 +60,7 @@ AppleScript → Messages.app → sends reply
 
 - macOS (iMessage requires it)
 - Python 3.12+
+- Node.js 18+ (for the desktop pet)
 - An Anthropic API key ([get one here](https://console.anthropic.com/))
 - Full Disk Access granted to Terminal (required to read `chat.db`)
 - iMessage configured and signed in on your Mac
@@ -61,13 +78,13 @@ AppleScript → Messages.app → sends reply
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/Jay-tech456/TamaBotchi.git
-cd TamaBotchi
+git clone https://github.com/Jay-tech456/Tama-Bot-chi.git
+cd Tama-Bot-chi
 ```
 
 ### 2. Create virtual environments
 
-Each service has its own venv. Run these from the repo root:
+Each Python service has its own venv. Run these from the repo root:
 
 ```bash
 # Agent API
@@ -88,14 +105,14 @@ pip install -r requirements.txt && deactivate && cd ..
 Create `agent/.env`:
 
 ```bash
-touch agent/.env
+cp agent/.env.example agent/.env
 ```
 
-Add your Anthropic API key:
+Fill in your key:
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-3-5-haiku-20241022
+CLAUDE_MODEL=claude-haiku-4-5-20251001
 IMESSAGE_SERVER_URL=http://localhost:5001
 MCP_SERVER_URL=http://localhost:5002
 AGENT_NAME=TamaBotchi
@@ -105,7 +122,7 @@ AGENT_NAME=TamaBotchi
 
 ## Running TamaBotchi
 
-Open **four separate terminal tabs** and run one command per tab, from the repo root.
+Open four terminal tabs and run one command per tab, from the repo root.
 
 ### Terminal 1 — MCP Server
 
@@ -131,7 +148,7 @@ cd agent && source .venv/bin/activate && uvicorn main:app --reload --port 5000
 cd imessage-server && source .venv/bin/activate && python watcher.py
 ```
 
-The watcher will print:
+Once the watcher is running you should see:
 
 ```
 ============================================================
@@ -145,7 +162,7 @@ The watcher will print:
 [INFO] Waiting for incoming iMessages...
 ```
 
-Send yourself an iMessage from another device. Within a few seconds you should see:
+Send yourself an iMessage from another device. Within a few seconds:
 
 ```
 [INFO] New message from +1xxxxxxxxxx: hey
@@ -154,89 +171,106 @@ Send yourself an iMessage from another device. Within a few seconds you should s
 [INFO] Reply sent successfully to +1xxxxxxxxxx
 ```
 
+### Desktop Pet (optional)
+
+```bash
+cd desktop-pet && npm install && npm run dev
+```
+
+The bunny appears in a floating window on your desktop. It bounces when new messages arrive and goes to sleep when your inbox is quiet.
+
 ---
 
 ## Configuration
 
-All config lives in `agent/.env`. Key settings:
+All config lives in `agent/.env`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | required | Your Anthropic API key |
-| `CLAUDE_MODEL` | `claude-3-5-haiku-20241022` | Claude model to use for replies |
+| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Claude model used for replies |
+| `AGENT_NAME` | `TamaBotchi` | Name used in the agent's system prompt |
 | `IMESSAGE_SERVER_URL` | `http://localhost:5001` | iMessage bridge URL |
 | `MCP_SERVER_URL` | `http://localhost:5002` | MCP server URL |
-| `AGENT_NAME` | `TamaBotchi` | Name the agent uses in its system prompt |
-| `POLL_INTERVAL` | `3` | Seconds between chat.db polls (set in watcher env) |
+| `POLL_INTERVAL` | `3` | Seconds between `chat.db` polls |
+| `HIGH_MATCH_THRESHOLD` | `0.75` | Compatibility score above which TamaBotchi replies automatically |
 
 ---
 
 ## Project Structure
 
 ```
-TamaBotchi/
+Tama-Bot-chi/
 ├── agent/                    # Claude AI agent (port 5000)
 │   ├── core/
-│   │   ├── agent.py          # Main TamaBotchiAgent class + Claude integration
+│   │   ├── agent.py          # TamaBotchiAgent class + Claude integration
 │   │   ├── matching.py       # Interest-based compatibility scoring
-│   │   └── permissions.py    # Auto vs ask permission logic
+│   │   └── permissions.py    # Auto vs ask-first permission logic
 │   ├── tools/
 │   │   ├── imessage_tool.py  # iMessage bridge HTTP client
+│   │   ├── gmail_tool.py     # Gmail + Calendar integration
 │   │   └── mcp_client.py     # MCP server HTTP client
 │   ├── config.py             # Loads settings from .env
-│   ├── exceptions.py         # Custom exception hierarchy
+│   ├── exceptions.py         # Custom exception hierarchy (TamaError base)
 │   ├── tama_types.py         # TypedDict type definitions
-│   ├── main.py               # FastAPI server entrypoint
-│   └── requirements.txt
+│   └── main.py               # FastAPI server entrypoint
 │
-├── imessage-server/          # iMessage bridge + watcher
-│   ├── server.py             # FastAPI server (port 5001), sends via AppleScript
-│   ├── watcher.py            # Polls chat.db, routes messages through agent
-│   └── requirements.txt
+├── desktop-pet/              # Electron desktop pet (the bunny)
+│   └── src/components/
+│       ├── BunnyPet.tsx      # Animated pet with mood states
+│       ├── ChatView.tsx      # View recent conversations
+│       ├── CalendarView.tsx  # Upcoming scheduled meetings
+│       └── SummaryPanel.tsx  # Activity summary
 │
-├── mcp-server/               # User preferences/profile store (port 5002)
-│   ├── main.py               # FastAPI server
-│   ├── config.py
-│   └── requirements.txt
+├── imessage-server/          # iMessage bridge + watcher (port 5001)
+│   ├── server.py             # FastAPI, sends messages via AppleScript
+│   └── watcher.py            # Polls chat.db, routes through agent
 │
-└── README.md
+├── mcp-server/               # User data store (port 5002)
+│   ├── main.py               # FastAPI — profiles, preferences, history
+│   └── database.py           # SQLite via tama.db
+│
+├── mcp-gmail-main/           # Gmail MCP server integration
+├── nextjs-frontend/          # Next.js web frontend
+├── studio-sanity/            # Sanity CMS studio for content
+└── proximity-service/        # Proximity detection (mobile, in progress)
 ```
 
 ---
 
 ## API Reference
 
-The Agent API (port 5000) exposes these endpoints:
+The Agent API (port 5000) exposes:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/health` | Health check for all services |
+| `GET` | `/health` | Health check across all services |
 | `POST` | `/users/{user_id}/messages/incoming` | Handle incoming message, returns AI reply |
 | `POST` | `/users/{user_id}/messages/send` | Send a message on behalf of a user |
-| `POST` | `/users/{user_id}/detected` | Trigger outreach when person detected nearby |
+| `POST` | `/users/{user_id}/detected` | Trigger outreach when a person is detected nearby |
 | `GET` | `/users/{user_id}/profile` | Get user profile |
 | `PATCH` | `/users/{user_id}/profile` | Update user profile |
-| `GET` | `/users/{user_id}/preferences` | Get preferences |
-| `PATCH` | `/users/{user_id}/preferences` | Update preferences |
+| `GET` | `/users/{user_id}/preferences` | Get reply preferences |
+| `PATCH` | `/users/{user_id}/preferences` | Update reply preferences |
 
 ---
 
 ## Troubleshooting
 
-**"iMessage server returned 500: syntax error"**
-Upgrade to the latest version — this was a bug in the AppleScript escaping that has been fixed.
-
 **"Cannot read Messages database"**
-Terminal does not have Full Disk Access. See Prerequisites above.
+Terminal does not have Full Disk Access. Follow the grant instructions above.
 
 **"Agent API is not running. Start it first."**
-The watcher requires all three servers to be up before it starts. Launch Terminals 1–3 first.
+The watcher waits for all three servers before starting. Launch Terminals 1–3 first.
 
 **Watcher detects messages but sends no reply**
-Check the agent terminal (Terminal 3) for error logs. Most common cause: `ANTHROPIC_API_KEY` not set in `agent/.env`.
+Check the agent terminal for error logs. Most common cause: `ANTHROPIC_API_KEY` not set in `agent/.env`.
 
-**Reply sends to the wrong contact**
-The watcher uses the phone number directly from `chat.db`. Make sure numbers in your contacts are in E.164 format (`+1xxxxxxxxxx`).
+**"iMessage server returned 500: syntax error"**
+Pull the latest version — this was a bug in AppleScript escaping that has been fixed.
+
+**Reply goes to the wrong contact**
+The watcher uses phone numbers directly from `chat.db`. Make sure numbers are in E.164 format (`+1xxxxxxxxxx`).
 
 ---
 
