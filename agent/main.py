@@ -6,7 +6,9 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, List, Any
+from collections import defaultdict, deque
 from datetime import datetime
+import time
 import uvicorn
 import logging
 import traceback
@@ -60,6 +62,38 @@ app.add_middleware(
 # Store active agents (in production, use proper state management)
 active_agents: Dict[str, TamaBotchiAgent] = {}
 
+# Rate limiter: max 5 incoming iMessages per sender per minute (sliding window)
+_RATE_LIMIT_MAX: int = 5
+_RATE_LIMIT_WINDOW: float = 60.0  # seconds
+_rate_buckets: Dict[str, deque] = defaultdict(deque)
+
+
+def _is_rate_limited(sender_id: str) -> bool:
+    """
+    Return True if sender has exceeded 5 messages in the last 60 seconds.
+
+    Uses a sliding window keyed by sender_id. Expired timestamps are pruned
+    on each call so memory does not grow unboundedly.
+
+    Args:
+        sender_id: Phone number or email of the inbound message sender
+
+    Returns:
+        True if the sender should be throttled, False otherwise
+    """
+    now: float = time.monotonic()
+    window: deque = _rate_buckets[sender_id]
+
+    # Evict timestamps older than the window
+    while window and now - window[0] > _RATE_LIMIT_WINDOW:
+        window.popleft()
+
+    if len(window) >= _RATE_LIMIT_MAX:
+        return True
+
+    window.append(now)
+    return False
+
 
 # Pydantic models
 class UserDetectedRequest(BaseModel):
@@ -102,8 +136,6 @@ def get_or_create_agent(user_id: str) -> TamaBotchiAgent:
 @app.get('/health', response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
-    mcp_client = MCPClient()
-
     # Check service health
     services = {
         'agent': True,
@@ -156,7 +188,15 @@ async def incoming_message(user_id: str, request: IncomingMessageRequest):
 
     This is called when someone responds to the agent
     """
+    if _is_rate_limited(request.sender_id):
+        logger.warning("Rate limit hit for sender %s — dropping message", request.sender_id)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit exceeded: max {_RATE_LIMIT_MAX} messages per minute per sender.",
+        )
+
     try:
+        # Local JSON store (drives desktop pet display)
         conversation_store.log_message(
             sender=request.sender_id,
             message=request.message,
@@ -165,6 +205,16 @@ async def incoming_message(user_id: str, request: IncomingMessageRequest):
         )
 
         agent = get_or_create_agent(user_id)
+
+        # Persist incoming message to MongoDB Atlas for cross-session context
+        if agent.mongo_store:
+            agent.mongo_store.save_message(
+                conversation_id=request.conversation_id,
+                sender_id=request.sender_id,
+                text=request.message,
+                is_from_agent=False,
+            )
+            agent.mongo_store.increment_message_count(request.sender_id)
 
         result = agent.handle_incoming_message(
             request.sender_id,
@@ -179,6 +229,14 @@ async def incoming_message(user_id: str, request: IncomingMessageRequest):
                 is_from_agent=True,
                 conversation_id=request.conversation_id,
             )
+            # Persist agent reply to MongoDB Atlas
+            if agent.mongo_store:
+                agent.mongo_store.save_message(
+                    conversation_id=request.conversation_id,
+                    sender_id=request.sender_id,
+                    text=result["response"],
+                    is_from_agent=True,
+                )
 
         return result
 

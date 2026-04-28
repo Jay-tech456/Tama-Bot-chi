@@ -24,10 +24,8 @@ class Config:
     GMAIL_CREDENTIALS_PATH = os.getenv('GMAIL_CREDENTIALS_PATH', './credentials/gmail_credentials.json')
     GMAIL_TOKEN_PATH = os.getenv('GMAIL_TOKEN_PATH', './credentials/gmail_token.json')
 
-    # Redis
-    REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-    REDIS_DB = int(os.getenv('REDIS_DB', 0))
+    # MongoDB Atlas
+    MONGODB_URI: str = os.getenv('MONGODB_URI', '')
 
     # Agent Settings
     AGENT_NAME = os.getenv('AGENT_NAME', 'TamaBotchi')

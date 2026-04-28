@@ -2,7 +2,7 @@
 Core TamaBotchi AI Agent with Claude + LangChain
 """
 from anthropic import Anthropic
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import json
 import logging
 
@@ -58,6 +58,16 @@ class TamaBotchiAgent:
                 'high_match_threshold': 0.75,
                 'auto_schedule_enabled': True
             }
+
+        # Initialize MongoDB Atlas memory (optional — agent works without it)
+        # Lazy import so a missing pymongo package does not crash the agent at startup
+        self.mongo_store: Optional[Any] = None
+        if Config.MONGODB_URI:
+            try:
+                from mongo_store import MongoStore
+                self.mongo_store = MongoStore(Config.MONGODB_URI)
+            except Exception as e:
+                logger.warning("MongoDB Atlas unavailable, context disabled: %s", e)
 
         # Initialize LangChain agent
         self._setup_langchain_agent()
@@ -232,17 +242,38 @@ Craft a brief, friendly iMessage introduction (2-3 sentences max). Be authentic 
         Returns:
             dict with response and actions
         """
+        # Fetch cross-session history and relationship context from MongoDB Atlas
         history: List[Dict] = []
-        sender_profile: Dict = {}
+        contact_profile: Dict = {}
+        if self.mongo_store:
+            history = self.mongo_store.get_recent_history(sender_id, limit=10)
+            contact_profile = self.mongo_store.get_contact_profile(sender_id) or {}
+
+        sender_name: str = contact_profile.get('name', sender_id)
+
+        if history:
+            history_lines = "\n".join(
+                f"{'TamaBotchi' if m['is_from_agent'] else sender_name}: {m['text']}"
+                for m in history
+            )
+            history_text = history_lines
+        else:
+            history_text = "No prior history with this person."
+
+        relationship_notes: str = contact_profile.get('relationship_notes', '')
+        known_context_section = (
+            f"\nWhat you know about {sender_name}:\n{relationship_notes}"
+            if relationship_notes
+            else ""
+        )
 
         # Ask Claude to write the reply - output must be plain text only (sent directly as iMessage)
-        history_text = json.dumps(history[-5:], indent=2) if history else 'No prior history'
-        prompt = f"""You are replying to an iMessage from {sender_profile.get('name', 'someone')}.
+        prompt = f"""You are replying to an iMessage from {sender_name}.
 
 Their message: "{message}"
 
 Conversation history:
-{history_text}
+{history_text}{known_context_section}
 
 Write your reply. Output the reply text only - no analysis, no headers, no bullet points, no markdown. Just the plain message text you would send back."""
 
