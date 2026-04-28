@@ -4,6 +4,7 @@ Runs on macOS to send/receive iMessages via AppleScript
 """
 import subprocess
 import json
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -13,7 +14,15 @@ import sqlite3
 from threading import Lock
 from typing import Optional, List
 
-app = FastAPI(title="TamaBotchi iMessage Bridge", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize database on startup, regardless of how uvicorn launches the app."""
+    init_db()
+    yield
+
+
+app = FastAPI(title="TamaBotchi iMessage Bridge", version="1.0.0", lifespan=lifespan)
 
 # Add CORS middleware
 app.add_middleware(
@@ -288,10 +297,7 @@ async def get_logs(limit: int = 100):
 if __name__ == '__main__':
     import uvicorn
 
-    # Initialize database
-    init_db()
-
-    # Run server
+    # Run server (lifespan handles init_db)
     print("🚀 TamaBotchi iMessage Bridge Server starting...")
     print("📱 Make sure you have granted Full Disk Access to Terminal/iTerm")
     print("⚙️  System Preferences > Security & Privacy > Privacy > Full Disk Access")

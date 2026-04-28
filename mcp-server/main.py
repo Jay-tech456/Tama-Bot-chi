@@ -162,6 +162,15 @@ async def get_user_profile(user_id: str):
     except HTTPException:
         raise
     except Exception as e:
+        # Sanity returns 404 when the document doesn't exist — surface that as a
+        # 404 so callers (like the agent) can gracefully fall back rather than
+        # treating it as a server error (500).
+        err_str = str(e)
+        if "404" in err_str or "Not Found" in err_str:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User profile not found in Sanity: {user_id}"
+            )
         logger.error(f"Error fetching user profile {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
